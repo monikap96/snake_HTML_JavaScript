@@ -4,9 +4,10 @@
             background-color:  #363636;
         }
         .scoreDiv{
-            margin: auto;
-            width: 50%;
             margin-top: 20px;
+            display: flex;
+            display: flex;
+            justify-content: center;
         }
         .scoreDiv p{
             display: inline-flex;
@@ -14,14 +15,13 @@
             font-size: 20px; 
         }
         .centerDiv {
-            margin: auto;
-            width: 50%;
+            display: flex;
+            justify-content: center;
         }
         #YourScore, #MaxScore{
             color: white;
         }
         #YourScore{
-            
             margin-right: 100px;
         }
         #startbg{
@@ -33,7 +33,6 @@
             opacity: 0.7;
         }
         #newGameButton, #resumeButton{
-            margin-left: 160px; 
             margin-top: 200px;
             font-size: 35px; 
             position: absolute;
@@ -44,7 +43,6 @@
             opacity: 0.7;
         }
         #resumeButton{
-            margin-left: 180px;
             margin-top: 300px;
             display: none;
         }
@@ -243,14 +241,14 @@
             speed=250;
             snakeElem=[];
             clearTimeout(time);
-            document.getElementById("startWindow").style.display = "block";
+            document.getElementById("startWindow").style.display = "flex";
             setMaxScore();
         }
 
         function displayWindow(){
             var style = document.getElementById("startWindow").style.display;
             if(style === "none")
-                document.getElementById("startWindow").style.display = "block";
+                document.getElementById("startWindow").style.display = "flex";
             else{
                 document.getElementById("startWindow").style.display = "none";
                 document.getElementById("resumeButton").style.display = "none";
@@ -321,7 +319,7 @@
                         displayWindow();
                         pause=true;
                         clearTimeout(time);
-                        document.getElementById("resumeButton").style.display = "block";
+                        document.getElementById("resumeButton").style.display = "flex";
                     }else if(pause && !firstTime){
                         displayWindow();
                         time = setTimeout(go, speed);
