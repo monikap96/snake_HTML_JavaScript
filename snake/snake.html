@@ -89,7 +89,7 @@
         var newWay=way;
         var time;
         var pause=false;
-        var hasDied=false;
+        var isGameOver=false;
 
         var c=document.getElementById("myCanvas");
         var ctx=c.getContext("2d");
@@ -104,7 +104,7 @@
             }
 
             way = newWay;
-            time = setTimeout(go, 500/(score/5+1));
+            time = setTimeout(go, 400/(score/3+1));
         }
         
         function drawApple(){
@@ -124,18 +124,18 @@
         }
 
         function checkIfSnakeHasDied(head){
-            if(!hasDied){
+            if(!isGameOver){
                 var headX = head.split(',')[0];
                 var headY = head.split(',')[1];
 
                 if(headX<0 || headY<0 || headX>=500 || headY>=500){
-                    hasDied=true;
-                    windowAfterDie();
+                    isGameOver=true;
+                    gameOver();
                 }else{
                     for(var i=1; i<snakeElem.length; i++){
                         if(snakeElem[i]== head){
-                            hasDied=true;
-                            windowAfterDie();
+                            isGameOver=true;
+                            gameOver();
                         }
                     }
                 }
@@ -171,7 +171,7 @@
         }
 
         function setNewPosition(moveX, moveY){
-            if(!hasDied){
+            if(!isGameOver){
                 var oldPosition = snakeElem[0];
                 var newValue=0;
                 var newX, newY;
@@ -205,7 +205,7 @@
         }
 
         function checkIfAppleIsEaten(){
-            if(!hasDied){
+            if(!isGameOver){
                 var snakeHeadX = snakeElem[0].split(',')[0];
                 var snakeHeadY = snakeElem[0].split(',')[1];
                 if(snakeHeadX == appleX && snakeHeadY == appleY){
@@ -220,7 +220,7 @@
         }
      
 
-        function windowAfterDie(){
+        function gameOver(){
             appleX=-20, appleY=-20;
             firstTime=false;
             snakeElem=[];
@@ -261,18 +261,18 @@
             firstTime=true;
             clearTimeout(time);
             time=0;
-            hasDied=false;
+            isGameOver=false;
             newGame();
         }
 
         function resume(){
             clearTimeout(time);
-            time = setTimeout(go, 500/(score/5+1));
+            time = setTimeout(go, 400/(score/3+1));
             pause=false;
             displayWindow();
         }
 
-        document.addEventListener('keyup', (e) => {
+        document.addEventListener('keydown', (e) => {
             switch(e.code){
                 case "ArrowUp": {
                     if(way!="down"){
@@ -306,7 +306,7 @@
                         document.getElementById("resumeButton").style.display = "block";
                     }else if(pause && !firstTime){
                         displayWindow();
-                        time = setTimeout(go, 500/(score/5+1));
+                        time = setTimeout(go, 400/(score/3+1));
                         pause=false;
                     }
                     break;
