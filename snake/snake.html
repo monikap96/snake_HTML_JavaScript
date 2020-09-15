@@ -8,7 +8,7 @@
             position: relative;
             margin: 4px 2px;
         }
-        #YourScore{
+        #YourScore, #MaxScore{
             color: white;
         }
         #startbg{
@@ -58,10 +58,20 @@
         <p id="YourScore">
             Score: 0
         </p>
+        <p id="MaxScore">
+            Max score: 0
+        </p>
         <script>
             var score=0;
+            var maxScore=0;
             function setScore(){
                 document.getElementById("YourScore").innerHTML = "Score: " + score;
+            }
+            function setMaxScore(){
+                if(score>maxScore){
+                    maxScore=score;
+                }
+                document.getElementById("MaxScore").innerHTML = "Max score: " + maxScore;
             }
         </script>
     </div>
@@ -79,6 +89,7 @@
         var newWay=way;
         var time;
         var pause=false;
+        var hasDied=false;
 
         var c=document.getElementById("myCanvas");
         var ctx=c.getContext("2d");
@@ -113,15 +124,19 @@
         }
 
         function checkIfSnakeHasDied(head){
-            var headX = head.split(',')[0];
-            var headY = head.split(',')[1];
+            if(!hasDied){
+                var headX = head.split(',')[0];
+                var headY = head.split(',')[1];
 
-            if(headX<0 || headY<0 || headX>=500 || headY>=500){
-                newGame();
-            }else{
-                for(var i=1; i<snakeElem.length; i++){
-                    if(snakeElem[i]== head){
-                        newGame();
+                if(headX<0 || headY<0 || headX>=500 || headY>=500){
+                    hasDied=true;
+                    windowAfterDie();
+                }else{
+                    for(var i=1; i<snakeElem.length; i++){
+                        if(snakeElem[i]== head){
+                            hasDied=true;
+                            windowAfterDie();
+                        }
                     }
                 }
             }
@@ -156,50 +171,64 @@
         }
 
         function setNewPosition(moveX, moveY){
-            var oldPosition = snakeElem[0];
-            var newValue=0;
-            var newX, newY;
-            x = parseInt(snakeElem[0].split(',')[0]);
-            y = parseInt(snakeElem[0].split(',')[1]);
-            newX =x+moveX; 
-            newY =y+moveY; 
-            newValue = newX + "," + newY;
-            snakeElem[0] = newValue;
-            for(var o=snakeElem.length-1; o>0; o--){
-                snakeElem[o]=snakeElem[o-1];
-            }
-            snakeElem[1]=oldPosition;
-            
-            checkIfSnakeHasDied(snakeElem[0]); 
-            checkIfAppleIsEaten();
-            
-            if(queueOfEatenApplesPositions.length>0 && firstEatenApplePosition==""){
-                firstEatenApplePosition=queueOfEatenApplesPositions.shift();
-            }
+            if(!hasDied){
+                var oldPosition = snakeElem[0];
+                var newValue=0;
+                var newX, newY;
+                x = parseInt(snakeElem[0].split(',')[0]);
+                y = parseInt(snakeElem[0].split(',')[1]);
+                newX =x+moveX; 
+                newY =y+moveY; 
+                newValue = newX + "," + newY;
+                snakeElem[0] = newValue;
+                for(var o=snakeElem.length-1; o>0; o--){
+                    snakeElem[o]=snakeElem[o-1];
+                }
+                snakeElem[1]=oldPosition;
+                
+                checkIfSnakeHasDied(snakeElem[0]); 
+                checkIfAppleIsEaten();
+                
+                if(queueOfEatenApplesPositions.length>0 && firstEatenApplePosition==""){
+                    firstEatenApplePosition=queueOfEatenApplesPositions.shift();
+                }
 
-            if(snakeElem[snakeElem.length-1]==firstEatenApplePosition){
-                snakeElem.push(firstEatenApplePosition);
-                tmp = firstEatenApplePosition;
-                firstEatenApplePosition="";
-            }
+                if(snakeElem[snakeElem.length-1]==firstEatenApplePosition){
+                    snakeElem.push(firstEatenApplePosition);
+                    tmp = firstEatenApplePosition;
+                    firstEatenApplePosition="";
+                }
 
-            drawSnake();
-            drawApple();
+                drawSnake();
+                drawApple();
+            }
         }
 
         function checkIfAppleIsEaten(){
-            var snakeHeadX = snakeElem[0].split(',')[0];
-            var snakeHeadY = snakeElem[0].split(',')[1];
-            if(snakeHeadX == appleX && snakeHeadY == appleY){
-                var addEatenApplePosition = "";
-                isEatenApple=true;
-                score++;
-                setScore();
-                addEatenApplePosition = appleX+","+appleY;
-                queueOfEatenApplesPositions.push(addEatenApplePosition);
+            if(!hasDied){
+                var snakeHeadX = snakeElem[0].split(',')[0];
+                var snakeHeadY = snakeElem[0].split(',')[1];
+                if(snakeHeadX == appleX && snakeHeadY == appleY){
+                    var addEatenApplePosition = "";
+                    isEatenApple=true;
+                    score++;
+                    setScore();
+                    addEatenApplePosition = appleX+","+appleY;
+                    queueOfEatenApplesPositions.push(addEatenApplePosition);
+                }
             }
         }
      
+
+        function windowAfterDie(){
+            appleX=-20, appleY=-20;
+            firstTime=false;
+            snakeElem=[];
+            clearTimeout(time);
+            document.getElementById("startWindow").style.display = "block";
+            setMaxScore();
+        }
+
         function displayWindow(){
             var style = document.getElementById("startWindow").style.display;
             if(style === "none")
@@ -211,6 +240,7 @@
         }
 
         function newGame(){
+            time=0;
             displayWindow();
             pause=false;
             isEatenApple= true;
@@ -229,6 +259,9 @@
 
         function newGameButton(){
             firstTime=true;
+            clearTimeout(time);
+            time=0;
+            hasDied=false;
             newGame();
         }
 
