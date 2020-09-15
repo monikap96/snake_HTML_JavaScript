@@ -1,0 +1,284 @@
+<html>
+    <style>
+        body{
+            background-color:  #363636;
+        }
+        .button {
+            padding: 5px 2px;
+            position: relative;
+            margin: 4px 2px;
+        }
+        #YourScore{
+            color: white;
+        }
+        #startbg{
+            margin-left: 5px; 
+            margin-top: 5px; 
+            width: 500px; 
+            height: 500px; 
+            position: fixed;
+            opacity: 0.4;
+        }
+        #newGameButton, #resumeButton{
+            margin-left: 160px; 
+            margin-top: 200px;
+            font-size: 35px; 
+            position: fixed;
+            color: green;
+            font-family: monospace;
+            border: none;
+            background-color: #363636;
+        }
+
+        #resumeButton{
+            margin-left: 180px;
+            margin-top: 300px;
+            display: none;
+        }
+
+        #newGameButton:hover, #resumeButton:hover{
+            background-color: #363636;
+            color: black;
+        }
+    </style>
+    <div id="startWindow">
+        <svg id="startbg">
+            <image href="snakebg.jpg" />
+        </svg>
+        <input id="newGameButton" type="button" value="New Game" onclick="newGameButton()">
+    </div>
+    <div>
+        <input id="resumeButton" type="button" value="Resume" onclick="resume()">
+    </div>
+    <div>
+        <canvas id="myCanvas" width="500" height="500" style="border:1px solid #FFFFFF;">
+        </canvas>
+    </div>
+    <div>
+        <p id="YourScore">
+            Score: 0
+        </p>
+        <script>
+            var score=0;
+            function setScore(){
+                document.getElementById("YourScore").innerHTML = "Score: " + score;
+            }
+        </script>
+    </div>
+
+    <script>
+        var firstTime=true;
+        var isEatenApple=false;
+        var queueOfEatenApplesPositions = [];
+        var widthOrHeight = 19;
+        var x,y;
+        var firstEatenApplePosition="";
+        var tmp="";
+        var snakeElem=[];
+        var way="right";
+        var newWay=way;
+        var time;
+        var pause=false;
+
+        var c=document.getElementById("myCanvas");
+        var ctx=c.getContext("2d");
+        var appleX=-20, appleY=-20;
+    
+        function go(){
+            switch(newWay){
+                case "right": setNewPosition(20,0); break;
+                case "left": setNewPosition(-20,0); break;
+                case "up": setNewPosition(0,-20); break;
+                case "down": setNewPosition(0,20); break;
+            }
+
+            way = newWay;
+            time = setTimeout(go, 500/(score/5+1));
+        }
+        
+        function drawApple(){
+            ctx.beginPath();
+
+            if(isEatenApple){
+                appleX = Math.floor((Math.random() * 25))*20;
+                appleY = Math.floor((Math.random() * 25))*20;
+                isEatenApple= false;
+            }
+            ctx.strokeStyle = "black";
+            ctx.fillStyle = "#FF0000";
+            ctx.rect(appleX, appleY, widthOrHeight, widthOrHeight);
+            ctx.stroke();
+            ctx.fill();
+            
+        }
+
+        function checkIfSnakeHasDied(head){
+            var headX = head.split(',')[0];
+            var headY = head.split(',')[1];
+
+            if(headX<0 || headY<0 || headX>=500 || headY>=500){
+                newGame();
+            }else{
+                for(var i=1; i<snakeElem.length; i++){
+                    if(snakeElem[i]== head){
+                        newGame();
+                    }
+                }
+            }
+        }
+
+        function drawSnake(){
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.beginPath();
+            ctx.strokeStyle = "black";
+            ctx.fillStyle = "#00FF00";
+            
+            for(var i=0; i<snakeElem.length; i++){
+                if(queueOfEatenApplesPositions.length>0 || firstEatenApplePosition!="" || tmp!=""){
+                    if(firstEatenApplePosition==snakeElem[i] || queueOfEatenApplesPositions.includes(snakeElem[i])){
+                        ctx.beginPath();
+                        ctx.fillStyle = "#0000FF";
+                    }else if(tmp==snakeElem[i-1]){ 
+                        ctx.beginPath();
+                        ctx.fillStyle = "#0000FF";
+                        tmp=firstEatenApplePosition;
+                    }else{
+                        ctx.beginPath();
+                        ctx.fillStyle = "#00FF00";
+                    }
+                }
+                x = snakeElem[i].split(',')[0];
+                y = snakeElem[i].split(',')[1];
+                ctx.rect(x, y, widthOrHeight, widthOrHeight);
+                ctx.stroke();
+                ctx.fill();
+            }
+        }
+
+        function setNewPosition(moveX, moveY){
+            var oldPosition = snakeElem[0];
+            var newValue=0;
+            var newX, newY;
+            x = parseInt(snakeElem[0].split(',')[0]);
+            y = parseInt(snakeElem[0].split(',')[1]);
+            newX =x+moveX; 
+            newY =y+moveY; 
+            newValue = newX + "," + newY;
+            snakeElem[0] = newValue;
+            for(var o=snakeElem.length-1; o>0; o--){
+                snakeElem[o]=snakeElem[o-1];
+            }
+            snakeElem[1]=oldPosition;
+            
+            checkIfSnakeHasDied(snakeElem[0]); 
+            checkIfAppleIsEaten();
+            
+            if(queueOfEatenApplesPositions.length>0 && firstEatenApplePosition==""){
+                firstEatenApplePosition=queueOfEatenApplesPositions.shift();
+            }
+
+            if(snakeElem[snakeElem.length-1]==firstEatenApplePosition){
+                snakeElem.push(firstEatenApplePosition);
+                tmp = firstEatenApplePosition;
+                firstEatenApplePosition="";
+            }
+
+            drawSnake();
+            drawApple();
+        }
+
+        function checkIfAppleIsEaten(){
+            var snakeHeadX = snakeElem[0].split(',')[0];
+            var snakeHeadY = snakeElem[0].split(',')[1];
+            if(snakeHeadX == appleX && snakeHeadY == appleY){
+                var addEatenApplePosition = "";
+                isEatenApple=true;
+                score++;
+                setScore();
+                addEatenApplePosition = appleX+","+appleY;
+                queueOfEatenApplesPositions.push(addEatenApplePosition);
+            }
+        }
+     
+        function displayWindow(){
+            var style = document.getElementById("startWindow").style.display;
+            if(style === "none")
+                document.getElementById("startWindow").style.display = "block";
+            else{
+                document.getElementById("startWindow").style.display = "none";
+                document.getElementById("resumeButton").style.display = "none";
+            }
+        }
+
+        function newGame(){
+            displayWindow();
+            pause=false;
+            isEatenApple= true;
+            way="right";
+            newWay = way;
+            snakeElem = ["40,20", "20,20", "0,20"];
+            drawSnake();
+            drawApple();
+            if(firstTime){
+                go();
+            }
+            firstTime=false;
+            score = 0;    
+            setScore();
+        }
+
+        function newGameButton(){
+            firstTime=true;
+            newGame();
+        }
+
+        function resume(){
+            clearTimeout(time);
+            time = setTimeout(go, 500/(score/5+1));
+            pause=false;
+            displayWindow();
+        }
+
+        document.addEventListener('keyup', (e) => {
+            switch(e.code){
+                case "ArrowUp": {
+                    if(way!="down"){
+                        newWay="up";
+                    }
+                    break;
+                }
+                case "ArrowDown": {
+                    if(way!="up"){
+                        newWay="down";
+                    }   
+                    break;
+                }
+                case "ArrowLeft": {
+                    if(way!="right"){
+                        newWay="left";
+                    }
+                    break;
+                }
+                case "ArrowRight": {
+                    if(way!="left"){
+                        newWay="right";
+                    }
+                    break;
+                }
+                case "Space": {
+                    if(!pause && !firstTime){
+                        displayWindow();
+                        pause=true;
+                        clearTimeout(time);
+                        document.getElementById("resumeButton").style.display = "block";
+                    }else if(pause && !firstTime){
+                        displayWindow();
+                        time = setTimeout(go, 500/(score/5+1));
+                        pause=false;
+                    }
+                    break;
+                }
+            }
+        });        
+    </script>
+</html>
