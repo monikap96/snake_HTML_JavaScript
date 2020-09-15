@@ -3,64 +3,63 @@
         body{
             background-color:  #363636;
         }
-        .button {
-            padding: 5px 2px;
-            position: relative;
-            margin: 4px 2px;
+        .scoreDiv{
+            margin: auto;
+            width: 50%;
+            margin-top: 20px;
+        }
+        .scoreDiv p{
+            display: inline-flex;
+            font-family: monospace;
+            font-size: 20px; 
+        }
+        .centerDiv {
+            margin: auto;
+            width: 50%;
         }
         #YourScore, #MaxScore{
             color: white;
+        }
+        #YourScore{
+            
+            margin-right: 100px;
         }
         #startbg{
             margin-left: 5px; 
             margin-top: 5px; 
             width: 500px; 
             height: 500px; 
-            position: fixed;
-            opacity: 0.4;
+            position: absolute;
+            opacity: 0.7;
         }
         #newGameButton, #resumeButton{
             margin-left: 160px; 
             margin-top: 200px;
             font-size: 35px; 
-            position: fixed;
+            position: absolute;
             color: green;
             font-family: monospace;
             border: none;
             background-color: #363636;
+            opacity: 0.7;
         }
-
         #resumeButton{
             margin-left: 180px;
             margin-top: 300px;
             display: none;
         }
-
         #newGameButton:hover, #resumeButton:hover{
             background-color: #363636;
             color: black;
         }
     </style>
-    <div id="startWindow">
-        <svg id="startbg">
-            <image href="snakebg.jpg" />
-        </svg>
-        <input id="newGameButton" type="button" value="New Game" onclick="newGameButton()">
-    </div>
-    <div>
-        <input id="resumeButton" type="button" value="Resume" onclick="resume()">
-    </div>
-    <div>
-        <canvas id="myCanvas" width="500" height="500" style="border:1px solid #FFFFFF;">
-        </canvas>
-    </div>
-    <div>
-        <p id="YourScore">
-            Score: 0
-        </p>
-        <p id="MaxScore">
-            Max score: 0
-        </p>
+    <div class="scoreDiv">
+            <p id="YourScore">
+                Score: 0
+            </p>
+            <p id="MaxScore">
+                Max score: 0
+            </p>
         <script>
             var score=0;
             var maxScore=0;
@@ -75,6 +74,21 @@
             }
         </script>
     </div>
+    <br>
+    <div id="startWindow" class="centerDiv">
+        <svg id="startbg">
+            <image href="snakebg.jpg" />
+        </svg>
+        <input id="newGameButton" type="button" value="New Game" onclick="newGameButton()">
+    </div>
+    <div class="centerDiv">
+        <input id="resumeButton" type="button" value="Resume" onclick="resume()">
+    </div>
+    <div class="centerDiv">
+        <canvas id="myCanvas" width="500" height="500" style="border:1px solid #FFFFFF;">
+        </canvas>
+    </div>
+    
 
     <script>
         var firstTime=true;
@@ -88,6 +102,7 @@
         var way="right";
         var newWay=way;
         var time;
+        var speed=250;
         var pause=false;
         var isGameOver=false;
 
@@ -104,7 +119,8 @@
             }
 
             way = newWay;
-            time = setTimeout(go, 400/(score/3+1));
+            clearTimeout(time);
+            time = setTimeout(go, speed);
         }
         
         function drawApple(){
@@ -120,7 +136,6 @@
             ctx.rect(appleX, appleY, widthOrHeight, widthOrHeight);
             ctx.stroke();
             ctx.fill();
-            
         }
 
         function checkIfSnakeHasDied(head){
@@ -209,6 +224,9 @@
                 var snakeHeadX = snakeElem[0].split(',')[0];
                 var snakeHeadY = snakeElem[0].split(',')[1];
                 if(snakeHeadX == appleX && snakeHeadY == appleY){
+                    if(speed>100){
+                        speed-=10;
+                    }
                     var addEatenApplePosition = "";
                     isEatenApple=true;
                     score++;
@@ -218,11 +236,11 @@
                 }
             }
         }
-     
 
         function gameOver(){
             appleX=-20, appleY=-20;
             firstTime=false;
+            speed=250;
             snakeElem=[];
             clearTimeout(time);
             document.getElementById("startWindow").style.display = "block";
@@ -267,7 +285,7 @@
 
         function resume(){
             clearTimeout(time);
-            time = setTimeout(go, 400/(score/3+1));
+            time = setTimeout(go, speed);
             pause=false;
             displayWindow();
         }
@@ -306,7 +324,7 @@
                         document.getElementById("resumeButton").style.display = "block";
                     }else if(pause && !firstTime){
                         displayWindow();
-                        time = setTimeout(go, 400/(score/3+1));
+                        time = setTimeout(go, speed);
                         pause=false;
                     }
                     break;
